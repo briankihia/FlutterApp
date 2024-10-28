@@ -1,47 +1,28 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  // void main function usually means it is the first function to be run as soon as the app runs
   runApp(MyApp());
-//   runApp is a function gotten from the import of material.dart above
+
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-
-//   flutter uses widgets to do all of its drawing and pretty much handling everything within the framework
-// widget is something that has has properties and could be rendered to the screen
-// eg. textwidget, row widget, column widget
-// when building our application we are going to build like a widget tree
-// ie. upper level widget that stores lower level widget
-// ie. if you modify the upper level widget everything gets modified
-
-//   this widget is the root of our application
-// stateleswidget just means that the widget will not be changing based on our interaction with it in the program
-// this means all we need to do when we make a statelesswidget is overide a method called build
-// MyApp takes all the functionality from statelesswidget class and altering it very slightly
-// statelesswidget has a bunch of functionality already defined
 @override
   Widget build(BuildContext context) {
-  // since this is the root widget of our application, what we are returning is our materiaApp
-  // materialApp just sets up the actuall app for us and defines the homepage for our application
   return MaterialApp(
-  //   first when we make an app the first thing we pass is a title
+
     title: 'Flutter App',
     theme: ThemeData(
-      // primarySwatch sets the primary color of our app
+
       primarySwatch: Colors.orange,
       primaryColor: Colors.orange,
-      // This makes the primary color yellow more broadly.
-    //   visualdensity means do we change the actual look of our app depending on what platform we are on eg. ios, android
       visualDensity: VisualDensity.adaptivePlatformDensity,
     ),
-    // home is going to be the homepage of your application
+
 
     home: MyHomePage(),
-  //   upto here is defining the actuall app but we havent defined what is actually going to show up when we draw the application
-  //    so we create a widget and place it here on the home to be our homepage
+
 
 
   );
@@ -53,42 +34,88 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-  //    dart is a typed language so you need to define the types of all of your parameters, the return types of all of your functions and methods so we are going to be using classes and object oriented programming with generics
-  // we must return a widget
-  //   whenever we start making an app atleast for now we are going to be returning the scaffold widget
-  //   this just setts up the basic structure of a page
-  //   it can also hold other widgets inside of it
-  //   you can also return a text widget
-    //   return Text("hello");
-    // inside scaffold we add a child widget
-    // first we add a title
-    // statelesswidget and scaffold are widgets and on them we have a build method that tells us what to display when the app gets built
 
-    // we are going to have widgets inside of widgets
-    //  we have a scaffold widget, that has an appBar, that appBar is equal to an AppBar widget that has a title which is equal to a Text widget
     return Scaffold(
         appBar: AppBar(title: Text("Hello Brian"),backgroundColor: Theme.of(context).primaryColor, ),
-        // Set AppBar to primary color- that part for backgroundcolor
-        body:  Column(children: <Widget>[TestWidget(), TestWidget(), TestWidget()],));
-  //   you can also change above column into a row by just changing it to Row
-  //   in above we make our body to have a column which is going to be displayed as a list of widgets within it
-  //   children takes a list of widgets
-  //   when you add the column widget , this doesn't show anything itself all it does is align the children of it inside a column so they are above and below each other
 
-
-  //   also inside this scaffold widget we should also have a build method which tells us what should be displayed when we build the scaffold widget
-
+        body: TextInputWiget()
+    );
 
   }
 }
 
+// first we make that stateful widget that is going to hold that text field
+// below we have 2 classes for 1 widget, how does that work??
+// one class is responsible for handling all of the state and the rendering(2nd class)
+// and other one is responsible for taking any constructor argument(1st class)
+class TextInputWiget extends StatefulWidget {
+  @override
+  // arrow below returns an instance of the TextInputWigetState
+  _TextInputWigetState createState() => _TextInputWigetState();
+}
+// below handles building and setups are done in the class above
+class _TextInputWigetState extends State<TextInputWiget> {
+  // below we are creating a controller to control text in the text box
+  // below is an object that is simply going to allow us to attach it to this text field and we can use controller to actually modify the content and figure out the content of the textfield
+  final controller = TextEditingController();
+  // we create a variable to store the text being created
+  String text = "";
 
-// the below is a text widget which can be re-used
-class TestWidget extends StatelessWidget {
-  const TestWidget({super.key});
+  // we add a method dispose
+  // we add @override because it is an override from the main class
+  @override
+  void dispose() {
+  //   we make sure that when we dispose of this widget we dispose off this controller
+  //   the below makes sure we call our parent dispose
+  //   what dispose does is that it cleans up the widget when it is done being used
+
+    super.dispose();
+    controller.dispose();
+  }
+
+
+  // now we create a function that updates the text variable above
+  void changeText(text) {
+    // now we manipulate the type of text being kept
+    if (text == "hello world") {
+      controller.clear();
+      text = "";
+    }
+    // to refresh the widget after making changes we wrap everything with setstate
+    setState(() {
+      this.text = text;
+    });
+
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    return Text('Hello World');
+    // below we want to return a text field
+    // decoration is all about beauty eg, color, icons, text that shows up behind.
+    // prefixIcon(a widget) just means the icon will go at the beginning.
+    // inside of icon we pass an elum which specifies which icon we want to display
+    // to control what is inside this text field we just need to create a text controller
+    return Column(children: <Widget>[
+      TextField(
+      // the below is just a noting that below controller is equal to the controller we defined above so now we can use the controller to access the values of this field
+      controller: this.controller,
+      decoration: InputDecoration(
+          prefixIcon: Icon(Icons.message), labelText: "Type a message"),
+        // we create a function which handles storing the text whenever there is a change
+        // we make a function with the parameter text and text is going to be passed from this field
+        // below function
+        // when the below onChanged function is called like onChanged(hey) the this.changeText is going to be called but with a hey
+        onChanged: (text) => this.changeText(text),
+      ),
+      // below we are now getting the text above and displaying it below
+      // Text(controller.text)   this alone will not work because we are not telling flutter to refresh this widget, we are not telling it to redraw
+    //   so we need to find a way to force flutter to refresh everytime we type something there.
+    //   Text(controller.text)
+    //   so rather than controller.text we just use the variable we have defined above
+      Text(this.text)
+    ]);
   }
 }
+
+
