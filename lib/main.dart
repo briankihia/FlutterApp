@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
+// this time we are going to create a widget and a button for when clicked the text is stored in our new widget and where we typed it it is cleared
+
+
 void main() {
   runApp(MyApp());
-
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-@override
+  @override
   Widget build(BuildContext context) {
   return MaterialApp(
 
@@ -23,98 +24,113 @@ class MyApp extends StatelessWidget {
 
     home: MyHomePage(),
 
-
-
   );
 }
 
 }
 
+// we want to modify my homepage to be a stateful widget
+// making it a stateful widget because we want to display dynamic content that changes in response to events
+// we want to have a textfield in my homepage and when we click the button in the text input widget, it actually modifies the homepage
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  String text = "";
+
+  // we want to give the below method to the textInputwiget
+  // changes empty text above to be whatever text we pass to it
+  void changeText(String text) {
+    // NB- we need to wrap this inside of set state
+    // because if we don't, then it would modify the text but it wont rerender the widget, so we wont actually see any of these updates happening
+    this.setState(() {
+      this.text = text;
+    //   this before text above helps to identify that we are not talking about the parameter text but the variable
+
+    });
+
+  }
+
+  // we write a function in this homepage class and pass it as a constructor argument in TextInputWiget(widget in body) , it would save it as a callback in it's class and we would call the callback when the bbutton is clicked
+  //  we make a method on my homepage state that we want called when the button is called.
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-        appBar: AppBar(title: Text("Hello Brian"),backgroundColor: Theme.of(context).primaryColor, ),
 
-        body: TextInputWiget()
+        appBar: AppBar(title: Text("Hello Brian"),backgroundColor: Theme.of(context).primaryColor, ),
+        // here in the body, we make a column and add a textInputWidget and also a textwidget
+        body: Column(children: <Widget>[TextInputWiget(this.changeText),
+          Text(this.text)
+        ])
     );
 
   }
 }
 
-// first we make that stateful widget that is going to hold that text field
-// below we have 2 classes for 1 widget, how does that work??
-// one class is responsible for handling all of the state and the rendering(2nd class)
-// and other one is responsible for taking any constructor argument(1st class)
+
+
 class TextInputWiget extends StatefulWidget {
+
+  // what we are going to do, is we are going to make a constructor inside textInputwidget that takes one parameter, which is the method we wanna use as a callback
+  // what the callback below is saying is that we will have the property of this class which is a callback, it is a function which takes a string as one of its arguments
+  // this widget we are in an immutable wiget/class so we cant modify any of the properties on it so we need to change below to be final
+  // final means once it is set we are not going to change it
+  final Function(String) callback;
+  // final function(String) callback;
+
+  // now we make a constructor that is going to define what callback is
+  //  to make it a constructor all we need to do to makeit a constructor is below
+  TextInputWiget(this.callback);
+
   @override
-  // arrow below returns an instance of the TextInputWigetState
   _TextInputWigetState createState() => _TextInputWigetState();
 }
-// below handles building and setups are done in the class above
-class _TextInputWigetState extends State<TextInputWiget> {
-  // below we are creating a controller to control text in the text box
-  // below is an object that is simply going to allow us to attach it to this text field and we can use controller to actually modify the content and figure out the content of the textfield
-  final controller = TextEditingController();
-  // we create a variable to store the text being created
-  String text = "";
 
-  // we add a method dispose
-  // we add @override because it is an override from the main class
+class _TextInputWigetState extends State<TextInputWiget> {
+  final controller = TextEditingController();
+
   @override
   void dispose() {
-  //   we make sure that when we dispose of this widget we dispose off this controller
-  //   the below makes sure we call our parent dispose
-  //   what dispose does is that it cleans up the widget when it is done being used
-
     super.dispose();
     controller.dispose();
   }
 
-
-  // now we create a function that updates the text variable above
-  void changeText(text) {
-    // now we manipulate the type of text being kept
-    if (text == "hello world") {
-      controller.clear();
-      text = "";
-    }
-    // to refresh the widget after making changes we wrap everything with setstate
-    setState(() {
-      this.text = text;
-    });
-
+  // this is a function that is employed when our onPressed button is clicked
+  // we want when the button is clicked Text widget is changed but the thing is it is located out of this function,
+  // thus we use a callback
+  // what a callback is , we pass a function to this TextInputWidget and when the button is pressed it will call the function that we passed in.
+  void click() {
+    widget.callback(controller.text);
+    controller.clear();
   }
+
 
 
   @override
   Widget build(BuildContext context) {
-    // below we want to return a text field
-    // decoration is all about beauty eg, color, icons, text that shows up behind.
-    // prefixIcon(a widget) just means the icon will go at the beginning.
-    // inside of icon we pass an elum which specifies which icon we want to display
-    // to control what is inside this text field we just need to create a text controller
-    return Column(children: <Widget>[
+
+    return
       TextField(
-      // the below is just a noting that below controller is equal to the controller we defined above so now we can use the controller to access the values of this field
+      //   we want we overlay the button over the textfield
+
       controller: this.controller,
       decoration: InputDecoration(
-          prefixIcon: Icon(Icons.message), labelText: "Type a message"),
-        // we create a function which handles storing the text whenever there is a change
-        // we make a function with the parameter text and text is going to be passed from this field
-        // below function
-        // when the below onChanged function is called like onChanged(hey) the this.changeText is going to be called but with a hey
-        onChanged: (text) => this.changeText(text),
-      ),
-      // below we are now getting the text above and displaying it below
-      // Text(controller.text)   this alone will not work because we are not telling flutter to refresh this widget, we are not telling it to redraw
-    //   so we need to find a way to force flutter to refresh everytime we type something there.
-    //   Text(controller.text)
-    //   so rather than controller.text we just use the variable we have defined above
-      Text(this.text)
-    ]);
+          // prefix means before , suffix mean after
+          prefixIcon: Icon(Icons.message), labelText: "Type a message",
+          suffixIcon: IconButton(icon: Icon(Icons.send,color: Colors.orange),
+            // sometimes splashColor doesn’t work as expected on an IconButton due to the material design's limitations in certain themes
+            splashColor: Colors.blue,
+            // tooltip message is displayed when the user long presses on it
+            tooltip: "Post Message",
+            onPressed: this.click,
+          )));
+
+
   }
 }
 
